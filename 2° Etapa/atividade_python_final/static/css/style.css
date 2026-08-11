@@ -1,0 +1,69 @@
+/* ---------- Cores dos cards por status (item 8 - desafio) ---------- */
+
+.status-pendente {
+  border-left: 5px solid #ffc107;
+}
+.status-em_andamento {
+  border-left: 5px solid #0d6efd;
+}
+.status-concluida {
+  border-left: 5px solid #198754;
+}
+
+.status-badge-pendente {
+  background-color: #ffc107;
+  color: #212529;
+}
+.status-badge-em_andamento {
+  background-color: #0d6efd;
+  color: #fff;
+}
+.status-badge-concluida {
+  background-color: #198754;
+  color: #fff;
+}
+
+/* ---------- Modo escuro (item 9) ---------- */
+
+body.dark-mode {
+  background-color: #121212;
+  color: #e9ecef;
+}
+
+body.dark-mode .card {
+  background-color: #1e1e1e;
+  color: #e9ecef;
+  border-color: #333;
+}
+
+body.dark-mode .card-footer {
+  border-color: #333;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+  background-color: #2a2a2a;
+  color: #e9ecef;
+  border-color: #444;
+}
+
+body.dark-mode .form-control::placeholder {
+  color: #999;
+}
+
+body.dark-mode .dropdown-menu {
+  background-color: #2a2a2a;
+}
+
+body.dark-mode .dropdown-item {
+  color: #e9ecef;
+}
+
+body.dark-mode .dropdown-item:hover {
+  background-color: #3a3a3a;
+  color: #fff;
+}
+
+body.dark-mode .text-muted {
+  color: #adb5bd !important;
+}

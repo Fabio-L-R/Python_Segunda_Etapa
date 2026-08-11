@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Painel de Tarefas{% endblock %}
+{% block content %}
+
+{% if frase %}
+<div class="alert alert-info d-flex align-items-center" role="alert">
+  <i class="bi bi-lightbulb me-2 fs-4"></i>
+  <div><strong>Frase do dia:</strong> {{ frase }}</div>
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h2 class="mb-0"><i class="bi bi-list-task"></i> Minhas tarefas</h2>
+
+  <div class="d-flex align-items-center gap-2">
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filtroStatus" data-bs-toggle="dropdown">
+        <i class="bi bi-funnel"></i> Filtrar: <span id="filtroAtual">Todas</span>
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="filtroStatus">
+        <li><a class="dropdown-item" href="#" data-status="todas">Todas</a></li>
+        <li><a class="dropdown-item" href="#" data-status="pendente">Pendente</a></li>
+        <li><a class="dropdown-item" href="#" data-status="em_andamento">Em andamento</a></li>
+        <li><a class="dropdown-item" href="#" data-status="concluida">Concluída</a></li>
+      </ul>
+    </div>
+    <a href="{{ url_for('nova_tarefa') }}" class="btn btn-primary">
+      <i class="bi bi-plus-circle"></i> Nova tarefa
+    </a>
+  </div>
+</div>
+
+<div id="listaTarefas" class="row g-3">
+  {% for tarefa in tarefas %}
+  <div class="col-md-4 tarefa-item">
+    <div class="card h-100 shadow-sm status-{{ tarefa['status'] }}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <h5 class="card-title">{{ tarefa['titulo'] }}</h5>
+          <span class="badge status-badge-{{ tarefa['status'] }}">{{ status_labels[tarefa['status']] }}</span>
+        </div>
+        <p class="card-text">{{ tarefa['descricao'] or 'Sem descrição.' }}</p>
+      </div>
+      <div class="card-footer bg-transparent d-flex justify-content-end gap-2">
+        {% if tarefa['status'] != 'concluida' %}
+        <form method="POST" action="{{ url_for('concluir', id=tarefa['id']) }}">
+          <button type="submit" class="btn btn-sm btn-outline-success" title="Concluir">
+            <i class="bi bi-check2"></i>
+          </button>
+        </form>
+        {% endif %}
+        <a href="{{ url_for('editar', id=tarefa['id']) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+          <i class="bi bi-pencil"></i>
+        </a>
+        <form method="POST" action="{{ url_for('excluir', id=tarefa['id']) }}" onsubmit="return confirm('Excluir esta tarefa?');">
+          <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+            <i class="bi bi-trash"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <p id="semTarefas" class="text-muted">Nenhuma tarefa cadastrada ainda.</p>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const statusLabels = {
+  todas: 'Todas',
+  pendente: 'Pendente',
+  em_andamento: 'Em andamento',
+  concluida: 'Concluída'
+};
+
+function renderTarefas(tarefas) {
+  const container = document.getElementById('listaTarefas');
+  container.innerHTML = '';
+
+  if (tarefas.length === 0) {
+    container.innerHTML = '<p class="text-muted">Nenhuma tarefa encontrada para este filtro.</p>';
+    return;
+  }
+
+  tarefas.forEach(t => {
+    const col = document.createElement('div');
+    col.className = 'col-md-4 tarefa-item';
+    col.innerHTML = `
+      <div class="card h-100 shadow-sm status-${t.status}">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <h5 class="card-title">${t.titulo}</h5>
+            <span class="badge status-badge-${t.status}">${t.status_label}</span>
+          </div>
+          <p class="card-text">${t.descricao ? t.descricao : 'Sem descrição.'}</p>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-end gap-2">
+          ${t.status !== 'concluida' ? `
+          <form method="POST" action="/concluir/${t.id}">
+            <button type="submit" class="btn btn-sm btn-outline-success" title="Concluir"><i class="bi bi-check2"></i></button>
+          </form>` : ''}
+          <a href="/editar/${t.id}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
+          <form method="POST" action="/excluir/${t.id}" onsubmit="return confirm('Excluir esta tarefa?');">
+            <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir"><i class="bi bi-trash"></i></button>
+          </form>
+        </div>
+      </div>`;
+    container.appendChild(col);
+  });
+}
+
+document.querySelectorAll('#filtroStatus + .dropdown-menu .dropdown-item').forEach(item => {
+  item.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const status = e.target.dataset.status;
+    document.getElementById('filtroAtual').textContent = statusLabels[status];
+
+    try {
+      const resp = await fetch(`/api/tarefas?status=${status}`);
+      const tarefas = await resp.json();
+      renderTarefas(tarefas);
+    } catch (err) {
+      console.error('Erro ao filtrar tarefas:', err);
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Progresso - Painel de Tarefas{% endblock %}
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-bar-chart"></i> Dashboard de Progresso</h2>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title text-center">Tarefas por status (barras)</h5>
+        <canvas id="graficoBarras"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title text-center">Tarefas por status (pizza)</h5>
+        <canvas id="graficoPizza"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+async function carregarProgresso() {
+  const resp = await fetch('/api/progresso');
+  const dados = await resp.json();
+
+  const cores = ['#ffc107', '#0d6efd', '#198754'];
+
+  new Chart(document.getElementById('graficoBarras'), {
+    type: 'bar',
+    data: {
+      labels: dados.labels,
+      datasets: [{
+        label: 'Quantidade de tarefas',
+        data: dados.valores,
+        backgroundColor: cores
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  new Chart(document.getElementById('graficoPizza'), {
+    type: 'pie',
+    data: {
+      labels: dados.labels,
+      datasets: [{
+        data: dados.valores,
+        backgroundColor: cores
+      }]
+    },
+    options: { responsive: true }
+  });
+}
+
+carregarProgresso();
+</script>
+{% endblock %}
